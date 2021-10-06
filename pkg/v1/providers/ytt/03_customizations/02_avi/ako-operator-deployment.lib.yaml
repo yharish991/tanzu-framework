@@ -106,7 +106,11 @@ spec:
     matchLabels:
       cluster-role.tkg.tanzu.vmware.com/management: ""
   cloudName: #@ data.values.AVI_CLOUD_NAME
+#@ if data.values.AVI_MANAGEMENT_CLUSTER_SERVICE_ENGINE_GROUP: 
+  serviceEngineGroup: #@ data.values.AVI_MANAGEMENT_CLUSTER_SERVICE_ENGINE_GROUP
+#@ else:
   serviceEngineGroup: #@ data.values.AVI_SERVICE_ENGINE_GROUP
+#@ end
   controller: #@ data.values.AVI_CONTROLLER
   adminCredentialRef:
     name: #@ data.values.AVI_ADMIN_CREDENTIAL_NAME
@@ -115,12 +119,17 @@ spec:
     name: #@ data.values.AVI_CA_NAME
     namespace: tkg-system
   dataNetwork:
-#@ if data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_NAME and data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_CIDR:
-    name: #@ data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_NAME
-    cidr: #@ data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_CIDR
+#@ if data.values.AVI_MANAGEMENT_CLUSTER_CP_VIP_NETWORK_NAME and data.values.AVI_MANAGEMENT_CLUSTER_CP_VIP_NETWORK_CIDR: 
+    name: #@ data.values.AVI_MANAGEMENT_CLUSTER_CP_VIP_NETWORK_NAME
+    cidr: #@ data.values.AVI_MANAGEMENT_CLUSTER_CP_VIP_NETWORK_CIDR
 #@ else:
-    name: #@ data.values.AVI_DATA_NETWORK
-    cidr: #@ data.values.AVI_DATA_NETWORK_CIDR
+    #@ if data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_NAME and data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_CIDR: 
+      name: #@ data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_NAME
+      cidr: #@ data.values.AVI_MANAGEMENT_CLUSTER_VIP_NETWORK_CIDR
+    #@ else:
+      name: #@ data.values.AVI_DATA_NETWORK
+      cidr: #@ data.values.AVI_DATA_NETWORK_CIDR
+    #@ end
 #@ end
   extraConfigs:
     disableStaticRouteSync: #@ data.values.AVI_DISABLE_STATIC_ROUTE_SYNC
