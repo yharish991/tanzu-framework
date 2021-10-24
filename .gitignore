@@ -42,3 +42,6 @@ pinniped
 
 # Mac OS files
 .DS_Store
+
+# Build artifacts related to management packages
+/management-packages-artifacts

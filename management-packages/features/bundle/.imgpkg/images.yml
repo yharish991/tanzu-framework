@@ -1,0 +1,11 @@
+---
+apiVersion: imgpkg.carvel.dev/v1alpha1
+images:
+- annotations:
+    kbld.carvel.dev/id: featuregates-controller-manager:latest
+    kbld.carvel.dev/origins: |
+      - resolved:
+          tag: v3.11.3_vmware.1
+          url: projects-stg.registry.vmware.com/tkg/calico-all/pod2daemon:v3.11.3_vmware.1
+  image: projects-stg.registry.vmware.com/tkg/calico-all/pod2daemon@sha256:93e81f5bcc0cc53e99f9b176853b982c5f962ce08bed0e672dc7c693e244060d
+kind: ImagesLock

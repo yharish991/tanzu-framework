@@ -19,8 +19,13 @@ export GOPROXY
 export GO111MODULE := on
 
 # Directories.
+ROOT_DIR:=$(shell git rev-parse --show-toplevel)
 BIN_DIR := bin
+TOOLS_SCRIPTS_DIR := $(ROOT_DIR)/hack/tools
 SRCS := go.mod go.sum
+
+YQ_VERSION=v4.5.0
+DAILY_BUILD_METADATA := https://build-artifactory.eng.vmware.com/kscom-generic-local/TKG/channels/tkg-v1.5.0-zshippable-stable/tkg-v1.5.0-zshippable.buildinfo.yaml
 
 KUBEBUILDER_VERSION=2.3.1
 YTT_VERSION=v0.31.0
@@ -32,14 +37,21 @@ HOST_OS=$(shell go env GOOS)
 HOST_ARCH=$(shell go env GOARCH)
 
 # Binaries.
-GINKGO := $(BIN_DIR)/ginkgo
-GOLANGCI_LINT := $(BIN_DIR)/golangci-lint
-GOIMPORTS := $(BIN_DIR)/goimports
-KUBEBUILDER := $(BIN_DIR)/kubebuilder
-YTT := $(BIN_DIR)/ytt
-KUBEVAL := $(BIN_DIR)/kubeval
-GOBINDATA := $(BIN_DIR)/gobindata
-VALE := $(BIN_DIR)/vale
+GINKGO             := $(BIN_DIR)/ginkgo
+GOLANGCI_LINT      := $(BIN_DIR)/golangci-lint
+GOIMPORTS          := $(BIN_DIR)/goimports
+KUBEBUILDER        := $(BIN_DIR)/kubebuilder
+KUBEVAL            := $(BIN_DIR)/kubeval
+GOBINDATA          := $(BIN_DIR)/gobindata
+VALE               := $(BIN_DIR)/vale
+YTT                := $(BIN_DIR)/ytt
+KBLD               := $(BIN_DIR)/kbld
+VENDIR             := $(BIN_DIR)/vendir
+IMGPKG             := $(BIN_DIR)/imgpkg
+YQ                 := $(BIN_DIR)/yq
+TRIVY              := $(BIN_DIR)/trivy
+KAPP               := $(BIN_DIR)/kapp
+
 
 ## --------------------------------------
 ## Help
@@ -75,12 +87,12 @@ $(KUBEBUILDER):
 	curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_${HOST_OS}_${HOST_ARCH}.tar.gz | tar -xz -C /tmp/
 	mv /tmp/kubebuilder_$(KUBEBUILDER_VERSION)_$(HOST_OS)_$(HOST_ARCH) $(@)
 
-ytt: $(YTT) ## Install ytt
-$(YTT):
-	mkdir -p $(BIN_DIR)
-	curl -LO https://github.com/vmware-tanzu/carvel-ytt/releases/download/$(YTT_VERSION)/ytt-$(HOST_OS)-$(HOST_ARCH)
-	mv ytt-$(HOST_OS)-$(HOST_ARCH) $(@)
-	chmod a+x $(@)
+#ytt: $(YTT) ## Install ytt
+#$(YTT):
+#	mkdir -p $(BIN_DIR)
+#	curl -LO https://github.com/vmware-tanzu/carvel-ytt/releases/download/$(YTT_VERSION)/ytt-$(HOST_OS)-$(HOST_ARCH)
+#	mv ytt-$(HOST_OS)-$(HOST_ARCH) $(@)
+#	chmod a+x $(@)
 
 kubeval: $(KUBEVAL) ## Install kubeval
 $(KUBEVAL):
@@ -98,6 +110,54 @@ vale: $(VALE)
 $(VALE):
 	mkdir -p $(BIN_DIR)
 	curl -sfL https://install.goreleaser.com/github.com/ValeLint/vale.sh | sh -s v$(VALE_VERSION)
+
+yq: $(YQ) ## Download yq
+$(YQ):
+	mkdir -p $(BIN_DIR)
+	echo $(HOST_OS) $(HOST_ARCH)
+	curl -sL https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_$(HOST_OS)_$(HOST_ARCH) -o $(@) && \
+	chmod a+x $(@)
+
+## --------------------------------------------------------------------------------------------------------
+## Carvel tools are downloaded from release metadata because version needs to match for building packages
+## --------------------------------------------------------------------------------------------------------
+ytt: $(YQ) tkg-build-info $(YTT) ## Download ytt
+$(YTT):
+	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary ytt $(HOST_OS)
+
+kbld: $(YQ) tkg-build-info $(KBLD) ## Download kbld
+$(KBLD):
+	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary kbld $(HOST_OS)
+
+vendir: $(YQ) tkg-build-info $(VENDIR) ## Download vendir
+$(VENDIR):
+	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary vendir $(HOST_OS)
+
+imgpkg: $(YQ) tkg-build-info $(IMGPKG) ## Download imgpkg
+$(IMGPKG):
+	#./download-binaries.sh imgpkg	TODO - fix imgpkg gobuild URL as it is 404 since it was not marked as release
+	curl -sL https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v0.11.0/imgpkg-$(HOST_OS)-$(HOST_ARCH) -o $(@) && \
+	chmod a+x $(@)
+
+kapp: $(YQ) tkg-build-info $(KAPP) ## Download kapp
+$(KAPP):
+	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary kapp $(HOST_OS)
+
+## --------------------------------------
+## Fetch build metadata
+## --------------------------------------
+
+tkg-build-info:
+	curl -sL -o ./tkg-build-info.yaml $(DAILY_BUILD_METADATA)
+
+## --------------------------------------
+## Trivy
+## --------------------------------------
+
+trivy: $(TRIVY) ## Download trivy
+$(TRIVY):
+	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b $(TOOLS_BIN_DIR)
+
 
 ## --------------------------------------
 ## Cleanup

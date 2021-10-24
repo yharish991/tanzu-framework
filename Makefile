@@ -15,24 +15,34 @@ ifeq ($(GOHOSTOS), darwin)
 XDG_DATA_HOME := "$${HOME}/Library/Application Support"
 endif
 
+OCI_REGISTRY := docker.io/harishyayi
+
 # Directories
 TOOLS_DIR := $(abspath hack/tools)
 TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
 BIN_DIR := bin
 ROOT_DIR := $(shell git rev-parse --show-toplevel)
 ADDONS_DIR := addons
+PACKAGES_SCRIPTS_DIR := $(abspath hack/packages/scripts)
 UI_DIR := pkg/v1/tkg/web
 
 # Add tooling binaries here and in hack/tools/Makefile
-GOLANGCI_LINT := $(TOOLS_BIN_DIR)/golangci-lint
-GOIMPORTS := $(TOOLS_BIN_DIR)/goimports
-GOBINDATA := $(TOOLS_BIN_DIR)/gobindata
-KUBEBUILDER := $(TOOLS_BIN_DIR)/kubebuilder
-YTT := $(TOOLS_BIN_DIR)/ytt
-KUBEVAL := $(TOOLS_BIN_DIR)/kubeval
-GINKGO := $(TOOLS_BIN_DIR)/ginkgo
-VALE := $(TOOLS_BIN_DIR)/vale
-TOOLING_BINARIES := $(GOLANGCI_LINT) $(YTT) $(KUBEVAL) $(GOIMPORTS) $(GOBINDATA) $(GINKGO) $(VALE)
+GOLANGCI_LINT      := $(TOOLS_BIN_DIR)/golangci-lint
+GOIMPORTS          := $(TOOLS_BIN_DIR)/goimports
+GOBINDATA          := $(TOOLS_BIN_DIR)/gobindata
+KUBEBUILDER        := $(TOOLS_BIN_DIR)/kubebuilder
+YTT                := $(TOOLS_BIN_DIR)/ytt
+KBLD               := $(TOOLS_BIN_DIR)/kbld
+VENDIR             := $(TOOLS_BIN_DIR)/vendir
+IMGPKG             := $(TOOLS_BIN_DIR)/imgpkg
+KAPP               := $(TOOLS_BIN_DIR)/kapp
+TRIVY              := $(TOOLS_BIN_DIR)/trivy
+KUBEVAL            := $(TOOLS_BIN_DIR)/kubeval
+GINKGO             := $(TOOLS_BIN_DIR)/ginkgo
+VALE               := $(TOOLS_BIN_DIR)/vale
+TOOLING_BINARIES   := $(GOLANGCI_LINT) $(YTT) $(KBLD) $(VENDIR) $(IMGPKG) $(KAPP) $(KUBEVAL) $(GOIMPORTS) $(GOBINDATA) $(GINKGO) $(VALE)
+
+export MANAGEMENT_PACKAGE_REPO_VERSION ?= $(shell git describe --tags --always)
 
 PINNIPED_GIT_REPOSITORY = https://github.com/vmware-tanzu/pinniped.git
 ifeq ($(strip $(PINNIPED_GIT_COMMIT)),)
@@ -57,6 +67,12 @@ endif
 ifndef TKG_DEFAULT_COMPATIBILITY_IMAGE_PATH
 # TODO change it to "tkg-compatibility" once the image is pushed to registry
 TKG_DEFAULT_COMPATIBILITY_IMAGE_PATH = "framework-zshippable/tkg-compatibility"
+endif
+
+# Management package registry
+MANAGEMENT_PACKAGES_IMAGE_REGISTRY := projects-stg.registry.vmware.com/tkg/tkgextensions-dev
+ifeq ($(IS_FRAMEWORK_BUILD), true)
+MANAGEMENT_PACKAGES_IMAGE_REGISTRY = ${OCI_REGISTRY}
 endif
 
 DOCKER_DIR := /app
@@ -486,3 +502,46 @@ e2e-tkgctl-vc67: $(GINKGO) generate-embedproviders ## Run ginkgo tkgctl E2E test
 .PHONY: e2e-tkgpackageclient-docker
 e2e-tkgpackageclient-docker: $(GINKGO) generate-embedproviders ## Run ginkgo tkgpackageclient E2E tests
 	$(GINKGO) -v -trace -nodes=$(GINKGO_NODES) --noColor=$(GINKGO_NOCOLOR) $(GINKGO_ARGS) -tags embedproviders pkg/v1/tkg/test/tkgpackageclient
+
+.PHONY: create-package
+create-package: ## Stub out new package directories and manifests. Usage: make create-package NAME=foobar VERSION=10.0.0
+	@hack/packages/scripts/create-package.sh $(NAME) $(VERSION)
+
+.PHONY: package-bundles
+package-bundles: management-package-bundles ## Build tar bundles for packages
+
+.PHONY: package-repos-bundles
+package-repos-bundles: management-package-repos-bundles ## Build tar bundles for package repos
+management-package-repos-bundles: management-package-bundles management-package-repos-bundles
+
+.PHONY: push-package-bundles
+push-package-bundles: push-management-package-bundles  ## Push package bundles
+
+.PHONY: push-package-repo-bundles
+push-package-repo-bundles: ## Push package repo bundles
+push-package-repo-bundles: push-management-package-repo-bundles
+
+.PHONY: push-management-package-bundles
+push-management-package-bundles: tools ## Push management package bundles
+	PACKAGE_REPOSITORY="management" REGISTRY=$(MANAGEMENT_PACKAGES_IMAGE_REGISTRY) $(PACKAGES_SCRIPTS_DIR)/package-utils.sh push_package_bundles
+
+.PHONY: push-management-package-repo-bundles
+push-management-package-repo-bundles: tools push-management-package-bundles ## Push management package repo bundles
+	PACKAGE_REPOSITORY="management" REGISTRY=$(MANAGEMENT_PACKAGES_IMAGE_REGISTRY) $(PACKAGES_SCRIPTS_DIR)/package-utils.sh push_package_repo_bundles
+
+.PHONY: management-imgpkg-lock-output
+management-imgpkg-lock-output: tools ## Generate imgpkg lock output for packages
+	PACKAGE_REPOSITORY="management" $(PACKAGES_SCRIPTS_DIR)/package-utils.sh generate_imgpkg_lock_output
+
+.PHONY: management-package-bundles
+management-package-bundles: tools management-imgpkg-lock-output ## Build tar bundles for packages
+	PACKAGE_REPOSITORY="management" $(PACKAGES_SCRIPTS_DIR)/package-utils.sh create_package_bundles localhost:5000
+
+.PHONY: management-package-repos-bundles
+management-package-repos-bundles: tools management-package-bundles ## Build tar bundles for package repos
+	PACKAGE_REPOSITORY="management" REGISTRY=$(MANAGEMENT_PACKAGES_IMAGE_REGISTRY) $(PACKAGES_SCRIPTS_DIR)/package-utils.sh create_package_repo_bundles
+
+.PHONY: local-registry
+local-registry: ## Starts up a local docker registry
+	docker container stop registry && docker container rm -v registry || true
+	docker run -d -p 5000:5000 --name registry projects-stg.registry.vmware.com/tkg/vkatam/registry:2
