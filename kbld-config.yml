@@ -4,4 +4,4 @@ kind: Config
 overrides:
 #! featuregates
 - image: featuregates-controller-manager:latest
-  newImage: projects-stg.registry.vmware.com/tkg/calico-all/pod2daemon:v3.11.3_vmware.1
+  newImage: ""
