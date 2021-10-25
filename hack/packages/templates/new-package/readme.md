@@ -22,4 +22,4 @@ The following configuration values can be set to customize the PACKAGE_NAME inst
 
 ## Usage Example
 
-The follow is a basic guide for getting started with PACKAGE_NAME.
+The following is a basic guide for getting started with PACKAGE_NAME.

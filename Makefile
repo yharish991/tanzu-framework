@@ -544,4 +544,4 @@ management-package-repos-bundles: tools management-package-bundles ## Build tar 
 .PHONY: local-registry
 local-registry: ## Starts up a local docker registry
 	docker container stop registry && docker container rm -v registry || true
-	docker run -d -p 5000:5000 --name registry projects-stg.registry.vmware.com/tkg/vkatam/registry:2
+	docker run -d -p 5000:5000 --name registry projects-stg.registry.vmware.com/tanzu_framework/registry:2

@@ -25,10 +25,11 @@ TOOLS_SCRIPTS_DIR := $(ROOT_DIR)/hack/tools
 SRCS := go.mod go.sum
 
 YQ_VERSION=v4.5.0
-DAILY_BUILD_METADATA := https://build-artifactory.eng.vmware.com/kscom-generic-local/TKG/channels/tkg-v1.5.0-zshippable-stable/tkg-v1.5.0-zshippable.buildinfo.yaml
-
 KUBEBUILDER_VERSION=2.3.1
-YTT_VERSION=v0.31.0
+YTT_VERSION=v0.34.0
+KBLD_VERSION=v0.31.0
+KAPP_VERSION=v0.37.0
+VENDIR_VERSION=v0.21.1
 KUBEVAL_VERSION=0.15.0
 VALE_VERSION=2.10.3
 
@@ -87,13 +88,6 @@ $(KUBEBUILDER):
 	curl -L https://github.com/kubernetes-sigs/kubebuilder/releases/download/v${KUBEBUILDER_VERSION}/kubebuilder_${KUBEBUILDER_VERSION}_${HOST_OS}_${HOST_ARCH}.tar.gz | tar -xz -C /tmp/
 	mv /tmp/kubebuilder_$(KUBEBUILDER_VERSION)_$(HOST_OS)_$(HOST_ARCH) $(@)
 
-#ytt: $(YTT) ## Install ytt
-#$(YTT):
-#	mkdir -p $(BIN_DIR)
-#	curl -LO https://github.com/vmware-tanzu/carvel-ytt/releases/download/$(YTT_VERSION)/ytt-$(HOST_OS)-$(HOST_ARCH)
-#	mv ytt-$(HOST_OS)-$(HOST_ARCH) $(@)
-#	chmod a+x $(@)
-
 kubeval: $(KUBEVAL) ## Install kubeval
 $(KUBEVAL):
 	mkdir -p $(BIN_DIR)
@@ -119,36 +113,43 @@ $(YQ):
 	chmod a+x $(@)
 
 ## --------------------------------------------------------------------------------------------------------
-## Carvel tools are downloaded from release metadata because version needs to match for building packages
+## Carvel tools
 ## --------------------------------------------------------------------------------------------------------
-ytt: $(YQ) tkg-build-info $(YTT) ## Download ytt
+
+ytt: $(YTT) ## Install ytt
 $(YTT):
-	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary ytt $(HOST_OS)
-
-kbld: $(YQ) tkg-build-info $(KBLD) ## Download kbld
-$(KBLD):
-	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary kbld $(HOST_OS)
-
-vendir: $(YQ) tkg-build-info $(VENDIR) ## Download vendir
-$(VENDIR):
-	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary vendir $(HOST_OS)
-
-imgpkg: $(YQ) tkg-build-info $(IMGPKG) ## Download imgpkg
-$(IMGPKG):
-	#./download-binaries.sh imgpkg	TODO - fix imgpkg gobuild URL as it is 404 since it was not marked as release
-	curl -sL https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v0.11.0/imgpkg-$(HOST_OS)-$(HOST_ARCH) -o $(@) && \
+	mkdir -p $(BIN_DIR)
+	curl -LO https://github.com/vmware-tanzu/carvel-ytt/releases/download/$(YTT_VERSION)/ytt-$(HOST_OS)-$(HOST_ARCH)
+	mv ytt-$(HOST_OS)-$(HOST_ARCH) $(@)
 	chmod a+x $(@)
 
-kapp: $(YQ) tkg-build-info $(KAPP) ## Download kapp
+kbld: $(KBLD) ## Download kbld
+$(KBLD):
+	mkdir -p $(BIN_DIR)
+	curl -LO https://github.com/vmware-tanzu/carvel-kbld/releases/download/$(KBLD_VERSION)/kbld-$(HOST_OS)-$(HOST_ARCH)
+	mv kbld-$(HOST_OS)-$(HOST_ARCH) $(@)
+	chmod a+x $(@)
+
+vendir: $(VENDIR) ## Download vendir
+$(VENDIR):
+	mkdir -p $(BIN_DIR)
+	curl -LO https://github.com/vmware-tanzu/carvel-vendir/releases/download/$(VENDIR_VERSION)/vendir-$(HOST_OS)-$(HOST_ARCH)
+	mv vendir-$(HOST_OS)-$(HOST_ARCH) $(@)
+	chmod a+x $(@)
+
+imgpkg: $(IMGPKG) ## Download imgpkg
+$(IMGPKG):
+	mkdir -p $(BIN_DIR)
+	curl -sL https://github.com/vmware-tanzu/carvel-imgpkg/releases/download/v0.11.0/imgpkg-$(HOST_OS)-$(HOST_ARCH)
+	mv imgpkg-$(HOST_OS)-$(HOST_ARCH) $(@)
+	chmod a+x $(@)
+
+kapp: $(KAPP) ## Download kapp
 $(KAPP):
-	$(TOOLS_SCRIPTS_DIR)/download-binaries.sh download_binary kapp $(HOST_OS)
-
-## --------------------------------------
-## Fetch build metadata
-## --------------------------------------
-
-tkg-build-info:
-	curl -sL -o ./tkg-build-info.yaml $(DAILY_BUILD_METADATA)
+	mkdir -p $(BIN_DIR)
+	curl -LO https://github.com/vmware-tanzu/carvel-kapp/releases/download/$(KAPP_VERSION)/kapp-$(HOST_OS)-$(HOST_ARCH)
+	mv kapp-$(HOST_OS)-$(HOST_ARCH) $(@)
+	chmod a+x $(@)
 
 ## --------------------------------------
 ## Trivy

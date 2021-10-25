@@ -46,4 +46,3 @@ pinniped
 # Build artifacts related to management packages
 /management-packages-artifacts
 package-values-sha256.yaml
-/hack/tools/tkg-build-info.yaml
