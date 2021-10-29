@@ -349,6 +349,7 @@ func (c *TkgClient) upgradeAddonPreNodeUpgrade(regionalClusterClient clusterclie
 			"addons-management/tanzu-addons-manager",
 			"tkr/tkr-controller",
 			"addons-management/core-package-repo",
+			"packages/management-package-repo",
 			"capabilities/capabilities-controller")
 	}
 	upgradeClusterMetadataOptions := &UpgradeAddonOptions{
