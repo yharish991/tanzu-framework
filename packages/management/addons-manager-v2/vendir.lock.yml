@@ -33,9 +33,9 @@ directories:
       tags:
       - v0.18.0-dev-8-g18dfe511
     path: kappcontrollerconfigs.yaml
-  path: config/upstream
+  path: bundle/config/upstream
 - contents:
   - manual: {}
     path: overlay-addons-manager.yaml
-  path: config/overlays
+  path: bundle/config/overlays
 kind: LockConfig
