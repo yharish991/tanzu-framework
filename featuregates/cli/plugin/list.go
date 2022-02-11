@@ -12,8 +12,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/vmware-tanzu/tanzu-framework/featuregates/client"
 	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/cli/component"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/features/client"
 )
 
 var featuregate, outputFormat string

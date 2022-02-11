@@ -11,8 +11,8 @@ import (
 	crclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	configv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/config/v1alpha1"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/features/client"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/features/client/fake"
+	"github.com/vmware-tanzu/tanzu-framework/featuregates/client"
+	"github.com/vmware-tanzu/tanzu-framework/featuregates/client/fake"
 )
 
 func TestJoinFeatures(t *testing.T) {
