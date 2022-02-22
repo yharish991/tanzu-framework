@@ -1,0 +1,15 @@
+name: Build Capilities Image
+on: [push]
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build and publish image
+        uses: ./.github/actions/docker-build-and-publish
+        with:
+          registry_url: docker.io/cangpivotal
+          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          package_path: pkg/v1/sdk/capabilities
