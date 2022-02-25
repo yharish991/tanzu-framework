@@ -1,0 +1,32 @@
+name: Package Build and Publish
+description: 'Runs the make kbld and imgpkg push for a single package'
+inputs:
+  registry_server:
+    description: 'URL of image registry to authenticate with. Defaults to docker.io.'
+    required: true
+    default: 'docker.io'
+  registry_url:
+    description: 'URL of image registry to push to.'
+    required: true
+  registry_username:
+    description: 'Username for image registry.'
+    required: true
+  registry_password:
+    description: 'Password for image registry.'
+    required: true
+  package_path:
+    description: 'Relative path to the package being built.'
+    required: true
+  image_name:
+    description: 'Name of the image being included in the package.'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    REGISTRY_SERVER: '${{ inputs.registry_server }}'
+    REGISTRY_URL: '${{ inputs.registry_url }}'
+    REGISTRY_USERNAME: '${{ inputs.registry_username }}'
+    REGISTRY_PASSWORD: '${{ inputs.registry_password }}'
+    PACKAGE_PATH: '${{ inputs.package_path }}'
+    IMAGE_NAME: '${{ inputs.image_name }}'
