@@ -67,10 +67,7 @@ endif
 
 .PHONY: docker-build
 docker-build:
-	cd ../../../../ && \
-	docker buildx build \
-	--load -t $(IMG) --platform="linux/amd64" \
-	-f pkg/v1/sdk/capabilities/Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
+	cd ../../../../ && docker build -t $(IMG) -f pkg/v1/sdk/capabilities/Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
 
 .PHONY: docker-publish
 docker-publish: ## Publish docker image
@@ -85,8 +82,5 @@ docker-image-names:
 	@echo $(IMG)
 
 .PHONY: docker-build-and-publish
-docker-build-and-publish:
-	cd ../../../../ && \
-	docker buildx build \
-	--push -t $(IMG) --platform="linux/amd64,linux/arm64" \
-	-f pkg/v1/sdk/capabilities/Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
+docker-build-and-publish: docker-build docker-publish
+

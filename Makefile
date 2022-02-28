@@ -670,7 +670,7 @@ e2e-tkgpackageclient-docker: $(GINKGO) generate-embedproviders ## Run ginkgo tkg
 # These are the components in this repo that need to have a docker image built.
 # This variable refers to directory paths that contain a Makefile with `docker-build`, `docker-publish` and
 # `kbld-image-replace` targets that can build and push a docker image for that component.
-COMPONENTS := pkg/v1/sdk/features addons cliplugins pkg/v2/tkr/webhook/infra-machine pkg/v1/sdk/capabilities
+COMPONENTS := pkg/v1/sdk/capabilities
 
 .PHONY: docker-build
 docker-build: TARGET=docker-build
@@ -757,3 +757,16 @@ management-package-vendir-sync: ## Performs a `vendir sync` for each management 
 	
 .PHONY: package-push-bundles-repo ## Performs build and publishes packages and repo bundles
 package-push-bundles-repo: package-bundles push-package-bundles package-repo-bundle push-package-repo-bundles
+
+PHONY: docker-build-dind
+docker-build-dind: ## Build docker image
+	docker build -t image-tooling:latest -f build-tooling/images/Dockerfile .
+	@ for COMPONENT in $(COMPONENTS) ; do \
+		docker run \
+		-e COMPONENT_PATH=$$COMPONENT \
+		-e REGISTRY_USERNAME=${REGISTRY_USERNAME} \
+		-e REGISTRY_PASSWORD=${REGISTRY_PASSWORD} \
+		-e REGISTRY_SERVER=${REGISTRY_SERVER} \
+		-e IMG_VERSION_OVERRIDE=${BUILD_VERSION} \
+		-v /var/run/docker.sock:/var/run/docker.sock image-tooling:latest;  \
+	done
