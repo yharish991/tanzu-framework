@@ -30,6 +30,7 @@ func init() {
 	packageBundlePushCmd.Flags().StringVar(&registry, "registry", "", "OCI registry where the package bundle image needs to be stored")
 	packageBundlePushCmd.Flags().StringVar(&version, "version", "", "Package bundle version")
 	packageBundlePushCmd.Flags().StringVar(&subVersion, "sub-version", "", "Package bundle subversion")
+	packageBundlePushCmd.Flags().BoolVar(&all, "all", false, "Push all package bundles in given package repository to an image repository")
 	packageBundlePushCmd.MarkFlagRequired("repository") //nolint: errcheck
 	packageBundlePushCmd.MarkFlagRequired("registry")   //nolint: errcheck
 	packageBundlePushCmd.MarkFlagRequired("version")    //nolint: errcheck
@@ -58,6 +59,12 @@ func runPackageBundlePush(cmd *cobra.Command, args []string) error {
 	repository, found := packageValues.Repositories[packageRepository]
 	if !found {
 		return fmt.Errorf("%s repository not found", packageRepository)
+	}
+
+	if !all {
+		if err := prunePackages(&repository, args); err != nil {
+			return err
+		}
 	}
 
 	for _, pkg := range repository.Packages {
@@ -110,5 +117,35 @@ func validatePackageBundlePushFlags() error {
 	if utils.IsStringEmpty(version) {
 		return fmt.Errorf("version flag cannot be empty")
 	}
+	return nil
+}
+
+// prunePackages will update the given repository packages to contain only the
+// bundle packages that match the provided argument(s). If no matching package
+// bundles can be found, an error is returned.
+func prunePackages(repository *Repository, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("at least one package bundle name is required to be specified")
+	}
+
+	var pruned []Package
+	for _, arg := range args {
+		var argFound bool
+		for _, pkg := range repository.Packages {
+			if pkg.Name == arg {
+				argFound = true
+				pruned = append(pruned, pkg)
+			}
+		}
+		if !argFound {
+			fmt.Printf("Warning: unable to find package bundle %q\n", arg)
+		}
+	}
+
+	if len(pruned) == 0 {
+		return fmt.Errorf("unable to find any of the package bundle names %v specified", args)
+	}
+
+	repository.Packages = pruned
 	return nil
 }
