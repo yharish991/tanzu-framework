@@ -121,8 +121,8 @@ func validatePackageBundlePushFlags() error {
 }
 
 // prunePackages will update the given repository packages to contain only the
-// bundle packages that match the provided argument(s). If no matching package
-// bundles can be found, an error is returned.
+// bundle packages that match the provided argument(s). If no package bundles
+// are provided or one cannot be found, an error is returned.
 func prunePackages(repository *Repository, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("at least one package bundle name is required to be specified")
@@ -138,12 +138,8 @@ func prunePackages(repository *Repository, args []string) error {
 			}
 		}
 		if !argFound {
-			fmt.Printf("Warning: unable to find package bundle %q\n", arg)
+			return fmt.Errorf("unable to find package bundle %q", arg)
 		}
-	}
-
-	if len(pruned) == 0 {
-		return fmt.Errorf("unable to find any of the package bundle names %v specified", args)
 	}
 
 	repository.Packages = pruned
