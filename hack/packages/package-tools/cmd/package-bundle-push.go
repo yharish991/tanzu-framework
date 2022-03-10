@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -120,25 +121,31 @@ func validatePackageBundlePushFlags() error {
 	return nil
 }
 
-// prunePackages will update the given repository packages to contain only the
-// bundle packages that match the provided argument(s). If no package bundles
-// are provided or one cannot be found, an error is returned.
+// prunePackages will update the given repository packages list to contain only
+// the bundle packages that match the first argument which contains a
+// comma-separated list of package bundles. If no package bundles are provided
+// or one cannot be found, an error is returned.
 func prunePackages(repository *Repository, args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("at least one package bundle name is required to be specified")
 	}
 
+	// Only the first argument of the command will be recognized. The argument
+	// is expected to contain a list of comma separated package bundles.
+	csvBundles := args[0]
+	bundles := strings.Split(csvBundles, ",")
+
 	var pruned []Package
-	for _, arg := range args {
+	for _, bundle := range bundles {
 		var argFound bool
 		for _, pkg := range repository.Packages {
-			if pkg.Name == arg {
+			if pkg.Name == bundle {
 				argFound = true
 				pruned = append(pruned, pkg)
 			}
 		}
 		if !argFound {
-			return fmt.Errorf("unable to find package bundle %q", arg)
+			return fmt.Errorf("unable to find package bundle %q", bundle)
 		}
 	}
 
