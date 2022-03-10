@@ -725,7 +725,7 @@ package-repo-bundle: tools prep-package-tools ## Build tar bundles for package r
 push-package-bundles: tools prep-package-tools ## Push specified package bundle(s) in a package repository. 
 ## Specified package bundles must be set to the PACKAGE_BUNDLES environment variable as comma-separated values 
 ## and must not contain spaces. Example: PACKAGE_BUNDLES=featuregates,core-management-plugins
-	cd hack/packages/package-tools && $(GO) run main.go package-bundle push --repository=$(PACKAGE_REPOSITORY) --registry=$(OCI_REGISTRY)/packages/$(PACKAGE_REPOSITORY) --version=$(BUILD_VERSION) --sub-version=$(PACKAGE_SUB_VERSION) $(PACKAGE_BUNDLES)
+	cd hack/packages/package-tools && $(GO) run main.go package-bundle push $(PACKAGE_BUNDLES) --repository=$(PACKAGE_REPOSITORY) --registry=$(OCI_REGISTRY)/packages/$(PACKAGE_REPOSITORY) --version=$(BUILD_VERSION) --sub-version=$(PACKAGE_SUB_VERSION)
 
 .PHONY: push-all-package-bundles
 push-all-package-bundles: tools prep-package-tools ## Push all package bundles in a package repository
