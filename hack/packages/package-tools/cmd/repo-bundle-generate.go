@@ -237,7 +237,7 @@ func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
 	packageYttCmd := exec.Command(filepath.Join(toolsBinDir, "ytt"), "-f", filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name, "package.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-cr-overlay.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-helpers.lib.yaml"),
-		"-f", packageValuesFile,
+		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values.yaml",
 		"-v", "packageRepository="+packageRepository,
 		"-v", "packageName="+pkg.Name,
 		"-v", "registry="+registry,
@@ -262,7 +262,7 @@ func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
 	packageMetadataYttCmd := exec.Command(filepath.Join(toolsBinDir, "ytt"), "-f", filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name, "metadata.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-metadata-cr-overlay.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-helpers.lib.yaml"),
-		"-f", packageValuesFile,
+		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values.yaml",
 		"-v", "packageRepository="+packageRepository,
 		"-v", "packageName="+pkg.Name,
 		"-v", "registry="+registry) // #nosec G204
@@ -279,7 +279,7 @@ func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
 
 	err = packageMetadataYttCmd.Run()
 	if err != nil {
-		return fmt.Errorf("couldn't generate PackageMetadata CR %s: %s", pkg.Name, packageYttCmdErrBytes.String())
+		return fmt.Errorf("couldn't generate PackageMetadata CR %s: %s", pkg.Name, packageMetadataYttCmdErrBytes.String())
 	}
 	return nil
 }

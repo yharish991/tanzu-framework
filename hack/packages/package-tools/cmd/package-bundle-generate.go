@@ -67,6 +67,14 @@ func runPackageBundleGenerate(cmd *cobra.Command, args []string) error {
 		if err := generatePackageBundle(projectRootDir, packageName, packagePath); err != nil {
 			return fmt.Errorf("couldn't generate the package bundle: %w", err)
 		}
+
+		pkg, err := getPackageFromPackageValues(projectRootDir, packageName)
+		if err != nil {
+			return err
+		}
+		if err := generatePackageCR(projectRootDir, toolsBinDir, &pkg); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -235,4 +243,25 @@ func getPackageVersion(version string) string {
 		pkgVersion = version[1:]
 	}
 	return pkgVersion
+}
+
+func getPackageFromPackageValues(projectRootDir, packageName string) (Package, error) {
+	packageValuesData, err := os.ReadFile(filepath.Join(projectRootDir, constants.PackageValuesFilePath))
+	if err != nil {
+		return Package{}, fmt.Errorf("couldn't read package-values.yaml: %w ", err)
+	}
+	packageValues := PackageValues{}
+	if err := yaml.Unmarshal(packageValuesData, &packageValues); err != nil {
+		return Package{}, err
+	}
+
+	for _, repository := range packageValues.Repositories {
+		packages := repository.Packages
+		for _, pkg := range packages {
+			if pkg.Name == packageName {
+				return pkg, nil
+			}
+		}
+	}
+	return Package{}, nil
 }
