@@ -1,0 +1,10 @@
+#@data/values
+#@overlay/match-child-defaults missing_ok=True
+
+---
+cluster:
+  version: v0.21.0-dev
+kubernetesrelease:
+  version: v0.21.0-dev
+feature:
+  version: v0.21.0-dev

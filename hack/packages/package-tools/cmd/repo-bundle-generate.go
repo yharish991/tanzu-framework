@@ -49,7 +49,7 @@ func runRepoBundleGenerate(cmd *cobra.Command, args []string) error {
 	}
 
 	if packageValuesFile == "" {
-		if err := generatePackageBundlesSha256(projectRootDir, constants.LocalRegistryURL); err != nil {
+		if err := generatePackageBundlesSha256(projectRootDir); err != nil {
 			return fmt.Errorf("couldn't generate package-values-sha256.yaml: %w", err)
 		}
 		packageValuesFile = filepath.Join(projectRootDir, constants.PackageValuesSha256FilePath)
@@ -75,7 +75,7 @@ func validateRepoBundleGenerateFlags() error {
 	return nil
 }
 
-func generatePackageBundlesSha256(projectRootDir, localRegistry string) error {
+func generatePackageBundlesSha256(projectRootDir string) error {
 	packageValuesData, err := os.ReadFile(filepath.Join(projectRootDir, constants.PackageValuesFilePath))
 	if err != nil {
 		return fmt.Errorf("couldn't read package-values.yaml: %w ", err)
@@ -92,65 +92,70 @@ func generatePackageBundlesSha256(projectRootDir, localRegistry string) error {
 	}
 
 	for i, pkg := range repository.Packages {
-		imagePackageVersion := version
-		if subVersion != "" {
-			imagePackageVersion = version + "_" + subVersion
-		}
-		packagePath := filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name)
 
-		if err := utils.RunMakeTarget(packagePath, "configure-package"); err != nil {
-			return err
-		}
 
-		toolsBinDir := filepath.Join(projectRootDir, constants.ToolsBinDirPath)
-
-		// push the imgpkg bundle to local registry
-		lockOutputFile := pkg.Name + "-" + imagePackageVersion + "-lock-output.yaml"
-		imgpkgCmd := exec.Command(filepath.Join(toolsBinDir, "imgpkg"),
-			"push", "-b", localRegistry+"/"+pkg.Name+":"+imagePackageVersion,
-			"--file", filepath.Join(packagePath, "bundle"),
-			"--lock-output", lockOutputFile) // #nosec G204
-
-		var errBytes bytes.Buffer
-		imgpkgCmd.Stderr = &errBytes
-		if err := imgpkgCmd.Run(); err != nil {
-			return fmt.Errorf("couldn't push the imgpkg bundle: %s", errBytes.String())
-		}
-
-		// update the package version and sha256
-		lockOutputData, err := os.ReadFile(lockOutputFile)
-		if err != nil {
-			return fmt.Errorf("couldn't read lock output file %s: %w", lockOutputFile, err)
-		}
-
-		bundleLock := lockconfig.BundleLock{}
-		if err := yaml.Unmarshal(lockOutputData, &bundleLock); err != nil {
-			return fmt.Errorf("error while unmarshaling: %w", err)
-		}
-
-		packageValues.Repositories[packageRepository].Packages[i].Version = getPackageVersion(version)
-		packageValues.Repositories[packageRepository].Packages[i].Sha256 = utils.AfterString(bundleLock.Bundle.Image, localRegistry+"/"+pkg.Name+"@sha256:")
-		yamlData, err := yaml.Marshal(&packageValues)
-		if err != nil {
-			return fmt.Errorf("error while marshaling: %w", err)
-		}
-
-		comments := []byte("#@data/values\n---\n")
-		yamlData = append(comments, yamlData...)
-		if err := os.WriteFile(filepath.Join(projectRootDir, constants.PackageValuesSha256FilePath), yamlData, 0755); err != nil {
-			return err
-		}
-
-		// remove lock output files
-		if err := os.Remove(lockOutputFile); err != nil {
-			return fmt.Errorf("couldn't remove file %s: %w", lockOutputFile, err)
-		}
-
-		if err := utils.RunMakeTarget(packagePath, "reset-package"); err != nil {
-			return err
-		}
 	}
 	return nil
+}
+
+func generatePackageBundleSha256ForPackage(projectRootDir string, pkg Package, packageIndex Package, packageValues PackageValues) error {
+	imagePackageVersion := version
+	if subVersion != "" {
+		imagePackageVersion = version + "_" + subVersion
+	}
+	packagePath := filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name)
+
+	if err := utils.RunMakeTarget(packagePath, "configure-package"); err != nil {
+		return err
+	}
+
+	toolsBinDir := filepath.Join(projectRootDir, constants.ToolsBinDirPath)
+
+	// push the imgpkg bundle to local registry
+	lockOutputFile := pkg.Name + "-" + imagePackageVersion + "-lock-output.yaml"
+	imgpkgCmd := exec.Command(filepath.Join(toolsBinDir, "imgpkg"),
+		"push", "-b", constants.LocalRegistryURL+"/"+pkg.Name+":"+imagePackageVersion,
+		"--file", filepath.Join(packagePath, "bundle"),
+		"--lock-output", lockOutputFile) // #nosec G204
+
+	var errBytes bytes.Buffer
+	imgpkgCmd.Stderr = &errBytes
+	if err := imgpkgCmd.Run(); err != nil {
+		return fmt.Errorf("couldn't push the imgpkg bundle: %s", errBytes.String())
+	}
+
+	// update the package version and sha256
+	lockOutputData, err := os.ReadFile(lockOutputFile)
+	if err != nil {
+		return fmt.Errorf("couldn't read lock output file %s: %w", lockOutputFile, err)
+	}
+
+	bundleLock := lockconfig.BundleLock{}
+	if err := yaml.Unmarshal(lockOutputData, &bundleLock); err != nil {
+		return fmt.Errorf("error while unmarshaling: %w", err)
+	}
+
+	packageValues.Repositories[packageRepository].Packages[i].Version = getPackageVersion(version)
+	packageValues.Repositories[packageRepository].Packages[i].Sha256 = utils.AfterString(bundleLock.Bundle.Image, constants.LocalRegistryURL+"/"+pkg.Name+"@sha256:")
+	yamlData, err := yaml.Marshal(&packageValues)
+	if err != nil {
+		return fmt.Errorf("error while marshaling: %w", err)
+	}
+
+	comments := []byte("#@data/values\n---\n")
+	yamlData = append(comments, yamlData...)
+	if err := os.WriteFile(filepath.Join(projectRootDir, constants.PackageValuesSha256FilePath), yamlData, 0755); err != nil {
+		return err
+	}
+
+	// remove lock output files
+	if err := os.Remove(lockOutputFile); err != nil {
+		return fmt.Errorf("couldn't remove file %s: %w", lockOutputFile, err)
+	}
+
+	if err := utils.RunMakeTarget(packagePath, "reset-package"); err != nil {
+		return err
+	}
 }
 
 func generateRepoBundle(projectRootDir string) error {
