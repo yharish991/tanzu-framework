@@ -202,7 +202,7 @@ func generateRepoBundle(projectRootDir string) error {
 	}
 
 	for i := range repository.Packages {
-		if err := generatePackageCR(projectRootDir, toolsBinDir, &repository.Packages[i]); err != nil {
+		if err := generatePackageCR(projectRootDir, toolsBinDir, registry, &repository.Packages[i]); err != nil {
 			return fmt.Errorf("couldn't generate the package: %w", err)
 		}
 	}
@@ -222,7 +222,10 @@ func generateRepoBundle(projectRootDir string) error {
 	return nil
 }
 
-func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
+func generatePackageCR(projectRootDir, toolsBinDir, registry string, pkg *Package) error {
+	//directory
+	//packageValuesFile
+	//registry
 	fmt.Printf("Generating Package CR for package %q...\n", pkg.Name)
 	if err := utils.CreateDir(filepath.Join(projectRootDir, constants.RepoBundlesDir, packageRepository, "packages", pkg.Name+"."+pkg.Domain)); err != nil {
 		return err
@@ -237,7 +240,7 @@ func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
 	packageYttCmd := exec.Command(filepath.Join(toolsBinDir, "ytt"), "-f", filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name, "package.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-cr-overlay.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-helpers.lib.yaml"),
-		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values.yaml",
+		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values-sha256.yaml",
 		"-v", "packageRepository="+packageRepository,
 		"-v", "packageName="+pkg.Name,
 		"-v", "registry="+registry,
@@ -262,7 +265,7 @@ func generatePackageCR(projectRootDir, toolsBinDir string, pkg *Package) error {
 	packageMetadataYttCmd := exec.Command(filepath.Join(toolsBinDir, "ytt"), "-f", filepath.Join(projectRootDir, "packages", packageRepository, pkg.Name, "metadata.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-metadata-cr-overlay.yaml"),
 		"-f", filepath.Join(projectRootDir, "hack", "packages", "templates", "repo-utils", "package-helpers.lib.yaml"),
-		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values.yaml",
+		"-f", "/Users/hyayi/work/tanzu-framework/packages/package-values-sha256.yaml",
 		"-v", "packageRepository="+packageRepository,
 		"-v", "packageName="+pkg.Name,
 		"-v", "registry="+registry) // #nosec G204

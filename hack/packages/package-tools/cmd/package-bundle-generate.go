@@ -72,7 +72,7 @@ func runPackageBundleGenerate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		if err := generatePackageCR(projectRootDir, toolsBinDir, &pkg); err != nil {
+		if err := generatePackageCR(projectRootDir, toolsBinDir,registry, &pkg); err != nil {
 			return err
 		}
 	}
