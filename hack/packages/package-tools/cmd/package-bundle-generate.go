@@ -72,6 +72,7 @@ func runPackageBundleGenerate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+		return generatePackageBundleSha256ForPackage(projectRootDir, pkg, i, packageValues)
 		if err := generatePackageCR(projectRootDir, toolsBinDir,registry, &pkg); err != nil {
 			return err
 		}

@@ -92,13 +92,12 @@ func generatePackageBundlesSha256(projectRootDir string) error {
 	}
 
 	for i, pkg := range repository.Packages {
-
-
+		return generatePackageBundleSha256ForPackage(projectRootDir, pkg, i, packageValues)
 	}
 	return nil
 }
 
-func generatePackageBundleSha256ForPackage(projectRootDir string, pkg Package, packageIndex Package, packageValues PackageValues) error {
+func generatePackageBundleSha256ForPackage(projectRootDir string, pkg Package, packageIndex int, packageValues PackageValues) error {
 	imagePackageVersion := version
 	if subVersion != "" {
 		imagePackageVersion = version + "_" + subVersion
@@ -135,8 +134,8 @@ func generatePackageBundleSha256ForPackage(projectRootDir string, pkg Package, p
 		return fmt.Errorf("error while unmarshaling: %w", err)
 	}
 
-	packageValues.Repositories[packageRepository].Packages[i].Version = getPackageVersion(version)
-	packageValues.Repositories[packageRepository].Packages[i].Sha256 = utils.AfterString(bundleLock.Bundle.Image, constants.LocalRegistryURL+"/"+pkg.Name+"@sha256:")
+	packageValues.Repositories[packageRepository].Packages[packageIndex].Version = getPackageVersion(version)
+	packageValues.Repositories[packageRepository].Packages[packageIndex].Sha256 = utils.AfterString(bundleLock.Bundle.Image, constants.LocalRegistryURL+"/"+pkg.Name+"@sha256:")
 	yamlData, err := yaml.Marshal(&packageValues)
 	if err != nil {
 		return fmt.Errorf("error while marshaling: %w", err)
@@ -156,6 +155,7 @@ func generatePackageBundleSha256ForPackage(projectRootDir string, pkg Package, p
 	if err := utils.RunMakeTarget(packagePath, "reset-package"); err != nil {
 		return err
 	}
+	return nil
 }
 
 func generateRepoBundle(projectRootDir string) error {
