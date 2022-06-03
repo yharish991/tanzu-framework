@@ -73,6 +73,14 @@ docker-build: ## Build docker image
 docker-publish: ## Publish docker image
 	docker push $(IMG)
 
+.PHONY: docker-lint
+docker-lint:
+	docker build . -f Dockerfile --target lint
+
+.PHONY: docker-test
+docker-test:
+	docker build . -f Dockerfile --target unit-test
+
 .PHONY: kbld-image-replace
 kbld-image-replace: ## Add newImage in kbld-config.yaml
 	cd ../hack/packages/kbld-image-replace && $(MAKE) run IMAGE=$(IMG_DEFAULT_NAME_TAG) NEW_IMAGE=$(IMG)

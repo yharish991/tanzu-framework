@@ -30,6 +30,7 @@ type FeatureGateReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+
 //+kubebuilder:rbac:groups=config.tanzu.vmware.com,resources=featuregates,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=config.tanzu.vmware.com,resources=featuregates/status,verbs=get;update;patch
 
