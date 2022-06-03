@@ -705,7 +705,7 @@ e2e-tkgpackageclient-docker: $(GINKGO) generate-embedproviders ## Run ginkgo tkg
 # These are the components in this repo that need to have a docker image built.
 # This variable refers to directory paths that contain a Makefile with `docker-build`, `docker-publish` and
 # `kbld-image-replace` targets that can build and push a docker image for that component.
-COMPONENTS :=  pkg/v2/tkr/controller/tkr-source pkg/v2/tkr/controller/tkr-status pkg/v1/sdk/features addons cliplugins pkg/v2/tkr/webhook/infra-machine pkg/v1/sdk/capabilities pkg/v2/tkr/webhook/tkr-conversion pkg/v2/tkr/webhook/cluster/tkr-resolver
+COMPONENTS :=  pkg/v1/sdk/capabilities
 
 .PHONY: docker-build
 docker-build: TARGET=docker-build
@@ -714,6 +714,10 @@ docker-build: $(COMPONENTS) ## Build Docker images
 .PHONY: docker-publish
 docker-publish: TARGET=docker-publish
 docker-publish: $(COMPONENTS) ## Push Docker images
+
+.PHONY: docker-lint
+docker-lint: TARGET=docker-lint
+docker-lint: $(COMPONENTS) ## Push Docker images
 
 .PHONY: kbld-image-replace
 kbld-image-replace: TARGET=kbld-image-replace
