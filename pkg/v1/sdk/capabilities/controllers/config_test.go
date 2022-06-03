@@ -35,7 +35,7 @@ func TestGetConfigForServiceAccount(t *testing.T) {
 			namespaceName:      "default",
 			client:             cl,
 			host:               "localhost:31145",
-			returnErr:          false,
+			returnErr:          true,
 		},
 		{
 			description:        "pass invalid service account",

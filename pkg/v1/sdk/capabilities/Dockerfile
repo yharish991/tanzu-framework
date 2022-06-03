@@ -5,20 +5,28 @@
 # top of their own trusted images.
 ARG BUILDER_BASE_IMAGE=golang:1.17
 
-# Build the manager binary
-FROM $BUILDER_BASE_IMAGE as builder
-
+FROM $BUILDER_BASE_IMAGE as base
 WORKDIR /workspace
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
 RUN  go mod download
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-
 # Copy the go source
 COPY ./ ./
+
+# Linting
+FROM base AS lint
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
+RUN golangci-lint run --timeout 20m0s ./...
+
+# Unit testing
+FROM base AS unit-test
+RUN go test ./...
+
+
+# Build the manager binary
+FROM base as builder
 
 # Build
 ARG LD_FLAGS
@@ -31,5 +39,5 @@ FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER nonroot:nonroot
-
 ENTRYPOINT ["/manager"]
+

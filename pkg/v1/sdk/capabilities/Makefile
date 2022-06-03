@@ -83,3 +83,11 @@ docker-image-names:
 
 .PHONY: docker-build-and-publish
 docker-build-and-publish: docker-build docker-publish kbld-image-replace
+
+.PHONY: docker-lint
+docker-lint:
+	cd ../../../../  && docker build . -f pkg/v1/sdk/capabilities/Dockerfile --target lint
+
+.PHONY: docker-test
+docker-test:
+	cd ../../../../  && docker build . -f pkg/v1/sdk/capabilities/Dockerfile --target unit-test
