@@ -1,0 +1,9 @@
+#@data/values
+---
+
+namespace: tkg-system
+deployment:
+  hostNetwork: true
+  nodeSelector: null
+  tolerations: []
+  webhookServerPort: 9443

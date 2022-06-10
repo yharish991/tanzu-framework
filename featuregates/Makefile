@@ -1,7 +1,7 @@
 # Copyright 2021 VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-include ../common.mk
+#include ../common.mk
 
 XDG_CONFIG_HOME := ${HOME}/.config
 TANZU_PLUGIN_PUBLISH_PATH ?= $(XDG_CONFIG_HOME)/tanzu-plugins
@@ -17,6 +17,28 @@ ifeq ($(strip $(OCI_REGISTRY)),)
 else
 	IMG ?= $(OCI_REGISTRY)/$(IMG_DEFAULT_NAME):$(IMG_VERSION_OVERRIDE)
 endif
+
+TOOLS_DIR := $(abspath hack/tools)
+TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
+
+# Add tooling binaries here and in hack/tools/Makefile
+CONTROLLER_GEN     := $(TOOLS_BIN_DIR)/controller-gen
+GOLANGCI_LINT      := $(TOOLS_BIN_DIR)/golangci-lint
+GOIMPORTS          := $(TOOLS_BIN_DIR)/goimports
+GOBINDATA          := $(TOOLS_BIN_DIR)/gobindata
+KUBEBUILDER        := $(TOOLS_BIN_DIR)/kubebuilder
+KUSTOMIZE          := $(TOOLS_BIN_DIR)/kustomize
+YTT                := $(TOOLS_BIN_DIR)/ytt
+KBLD               := $(TOOLS_BIN_DIR)/kbld
+VENDIR             := $(TOOLS_BIN_DIR)/vendir
+IMGPKG             := $(TOOLS_BIN_DIR)/imgpkg
+KAPP               := $(TOOLS_BIN_DIR)/kapp
+KUBEVAL            := $(TOOLS_BIN_DIR)/kubeval
+GINKGO             := $(TOOLS_BIN_DIR)/ginkgo
+VALE               := $(TOOLS_BIN_DIR)/vale
+YQ                 := $(TOOLS_BIN_DIR)/yq
+CONVERSION_GEN     := $(TOOLS_BIN_DIR)/conversion-gen
+TOOLING_BINARIES   := $(CONTROLLER_GEN) $(GOLANGCI_LINT) $(YTT) $(KBLD) $(VENDIR) $(IMGPKG) $(KAPP) $(KUBEVAL) $(KUSTOMIZE) $(GOIMPORTS) $(GOBINDATA) $(GINKGO) $(VALE) $(YQ) $(CONVERSION_GEN)
 
 CRD_OPTIONS ?= "crd"
 
@@ -65,6 +87,15 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
+tools: $(TOOLING_BINARIES) ## Build tooling binaries
+.PHONY: $(TOOLING_BINARIES)
+$(TOOLING_BINARIES):
+	make -C $(TOOLS_DIR) $(@F)
+
+.PHONY: local-registry
+local-registry: ## Starts up a local docker registry. Local docker registry is used for pushing the package bundle to get the sha256, for using it later when producing repo bundle
+	docker run -d -p 5001:5000 --name registry mirror.gcr.io/library/registry:2
+
 .PHONY: docker-build
 docker-build: ## Build docker image
 	docker build -t $(IMG) -f Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
@@ -80,6 +111,10 @@ docker-lint:
 .PHONY: docker-test
 docker-test:
 	docker build . -f Dockerfile --target unit-test
+
+.PHONY: package-bundle
+package-bundle:
+	docker build . -f Dockerfile --target packaging
 
 .PHONY: kbld-image-replace
 kbld-image-replace: ## Add newImage in kbld-config.yaml

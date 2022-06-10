@@ -159,10 +159,11 @@ require (
 	github.com/valyala/fastjson v1.6.3 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/vito/go-interact v0.0.0-20171111012221-fa338ed9e9ec // indirect
-	github.com/vmware-tanzu/carvel-imgpkg v0.23.1 // indirect
+	github.com/vmware-tanzu/carvel-imgpkg v0.24.0 // indirect
 	github.com/vmware-tanzu/carvel-kapp-controller v0.25.0 // indirect
 	github.com/vmware-tanzu/carvel-vendir v0.24.0 // indirect
 	github.com/vmware-tanzu/carvel-ytt v0.40.0 // indirect
+	github.com/vmware-tanzu/tanzu-framework/hack/packages/package-tools v0.0.0-20220609201342-03a7cb18d5b6 // indirect
 	github.com/vmware/govmomi v0.27.1 // indirect
 	github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 // indirect
 	go.mongodb.org/mongo-driver v1.1.2 // indirect
