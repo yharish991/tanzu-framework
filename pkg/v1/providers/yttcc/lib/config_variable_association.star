@@ -327,6 +327,8 @@ def get_cluster_variables():
         vars["network"] = network
     end
 
+    vars["cni"] = data.values["CNI"]
+
     customImageRepository = {}
     if data.values["TKG_CUSTOM_IMAGE_REPOSITORY"] != "":
         customImageRepository["host"] = data.values["TKG_CUSTOM_IMAGE_REPOSITORY"]
@@ -369,7 +371,11 @@ def get_cluster_variables():
     if data.values["CLUSTER_API_SERVER_PORT"] != None:
         vars["apiServerPort"] = data.values["CLUSTER_API_SERVER_PORT"]
     end
-    
+
+    if data.values["TKR_DATA"] != "":
+        vars["TKR_DATA"] = data.values["TKR_DATA"]
+    end
+
     return vars
 end
 
@@ -380,7 +386,6 @@ def get_aws_vars():
     simpleMapping["AWS_LOAD_BALANCER_SCHEME_INTERNAL"] = "loadBalancerSchemeInternal"
     vars = get_cluster_variables()
 
-    simpleMapping = {}
     for key in simpleMapping:
         if data.values[key] != None:
             vars[simpleMapping[key]] = data.values[key]

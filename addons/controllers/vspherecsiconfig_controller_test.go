@@ -347,10 +347,10 @@ var _ = Describe("VSphereCSIConfig Reconciler", func() {
 			clusterRole := &rbacv1.ClusterRole{}
 			Eventually(func() error {
 				key := client.ObjectKey{
-					Name: constants.ProviderServiceAccountAggregatedClusterRole,
+					Name: constants.VsphereCSIProviderServiceAccountAggregatedClusterRole,
 				}
 				if err := k8sClient.Get(ctx, key, clusterRole); err != nil {
-					return fmt.Errorf("Failed to get ClusterRole '%v': '%v'", key, err)
+					return err
 				}
 				Expect(clusterRole.Labels).To(Equal(map[string]string{
 					constants.CAPVClusterRoleAggregationRuleLabelSelectorKey: constants.CAPVClusterRoleAggregationRuleLabelSelectorValue,
@@ -358,6 +358,25 @@ var _ = Describe("VSphereCSIConfig Reconciler", func() {
 				Expect(clusterRole.Rules).To(HaveLen(6))
 				return nil
 			}, waitTimeout, pollingInterval).Should(Succeed())
+		})
+	})
+
+	Context("Reconcile VSphereCSIConfig used as template", func() {
+
+		BeforeEach(func() {
+			clusterName = "test-cluster-csi-template"
+			clusterResourceFilePath = "testdata/test-vsphere-csi-template-config.yaml"
+			enduringResourcesFilePath = ""
+		})
+
+		It("Should skip the reconciliation", func() {
+
+			key.Namespace = addonNamespace
+			config := &csiv1alpha1.VSphereCSIConfig{}
+			Expect(k8sClient.Get(ctx, key, config)).To(Succeed())
+
+			By("OwnerReferences is not set")
+			Expect(len(config.OwnerReferences)).Should(Equal(0))
 		})
 	})
 })
