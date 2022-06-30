@@ -1,0 +1,11 @@
+---
+apiVersion: imgpkg.carvel.dev/v1alpha1
+images:
+- annotations:
+    kbld.carvel.dev/id: featuregates-controller-manager:latest
+    kbld.carvel.dev/origins: |
+      - resolved:
+          tag: latest
+          url: quay.io/hyayiv/featuregates-controller-manager:latest
+  image: quay.io/hyayiv/featuregates-controller-manager@sha256:ebb7ee07511b54a1b746522c0e1af09426b01fce4067116bc90ae690bf17681e
+kind: ImagesLock

@@ -1,8 +1,6 @@
 # Copyright 2021 VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-include ../common.mk
-
 XDG_CONFIG_HOME := ${HOME}/.config
 TANZU_PLUGIN_PUBLISH_PATH ?= $(XDG_CONFIG_HOME)/tanzu-plugins
 
@@ -19,12 +17,6 @@ else
 endif
 
 CRD_OPTIONS ?= "crd"
-
-all: manager
-
-# Run tests
-test: fmt vet manifests
-	go test ./... -coverprofile cover.out
 
 # Build manager binary
 manager: fmt vet
@@ -65,26 +57,6 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
-.PHONY: docker-build
-docker-build: ## Build docker image
-	docker build -t $(IMG) -f Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
-
-.PHONY: docker-publish
-docker-publish: ## Publish docker image
-	docker push $(IMG)
-
-.PHONY: lint
-lint:
-	docker build . -f Dockerfile --target lint
-
-.PHONY: test
-test:
-	docker build . -f Dockerfile --target unit-test
-
-.PHONY: kbld-image-replace
-kbld-image-replace: ## Add newImage in kbld-config.yaml
-	cd ../hack/packages/kbld-image-replace && $(MAKE) run IMAGE=$(IMG_DEFAULT_NAME_TAG) NEW_IMAGE=$(IMG)
-
 .PHONY: docker-image-names
 docker-image-names:
 	@echo $(IMG)
@@ -99,3 +71,116 @@ build-plugin:
 .PHONY: publish-plugin
 publish-plugin:
 	$(GO) run ../cmd/cli/plugin-admin/builder/main.go publish --type local --plugins feature --version $(BUILD_VERSION) --os-arch "${GOHOSTOS}-${GOHOSTARCH}" --local-output-discovery-dir "$(TANZU_PLUGIN_PUBLISH_PATH)/discovery/standalone" --local-output-distribution-dir "$(TANZU_PLUGIN_PUBLISH_PATH)/distribution" --input-artifact-dir ./artifacts
+
+.PHONY: init
+init:
+	docker run --rm --entrypoint /bin/sh quay.io/hyayiv/build-tooling:latest -c "cat Dockerfile" > Dockerfile && \
+	docker pull quay.io/hyayiv/packaging:latest
+
+.PHONY: docker-all
+docker-all: docker-build docker-publish kbld-image-replace ## Ship Docker images
+
+.PHONY: docker-build
+docker-build: ## Build docker image
+	docker build -t $(IMG) -f Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" --load .
+
+.PHONY: docker-publish
+docker-publish: ## Publish docker image
+	docker push $(IMG)
+
+.PHONY: lint
+lint:
+	docker build . -f Dockerfile --target lint
+
+.PHONY: test
+test: fmt vet manifests
+	docker build . -f Dockerfile --target unit-test
+
+.PHONY: kbld-image-replace
+kbld-image-replace: ## Add newImage in kbld-config.yaml
+	cd ../hack/packages/kbld-image-replace && \
+      go run main.go -kbld-config ../../../featuregates/packages/featuregates/kbld-config.yaml $(IMG_DEFAULT_NAME_TAG) $(IMG)
+
+.PHONY: package-bundle-generate
+package-bundle-generate:
+	@docker run \
+	  -e OPERATIONS=package_bundle_generate \
+	  -e PACKAGE_NAME=$(PACKAGE_NAME) \
+	  -e THICK=true \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e PACKAGE_VERSION=$(PACKAGE_VERSION) \
+	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest
+
+.PHONY: package-bundle-generate-all
+package-bundle-generate-all:
+	@docker run \
+	  -e OPERATIONS=package_bundle_all_generate \
+	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
+	  -e THICK=true \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e PACKAGE_VERSION=$(PACKAGE_VERSION) \
+	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest
+
+.PHONY: package-bundle-push
+package-bundle-push:
+	@docker run \
+	  -e OPERATIONS=package_bundle_push \
+	  -e PACKAGE_NAME=$(PACKAGE_NAME) \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e PACKAGE_VERSION=$(PACKAGE_VERSION) \
+	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
+	  -e REGISTRY_USERNAME=$(REGISTRY_USERNAME) \
+	  -e REGISTRY_PASSWORD=$(REGISTRY_PASSWORD) \
+	  -e REGISTRY_SERVER=$(REGISTRY_SERVER) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest
+
+.PHONY: package-bundle-push-all
+package-bundle-push-all:
+	@docker run \
+	  -e OPERATIONS=package_bundle_all_push \
+	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e PACKAGE_VERSION=$(PACKAGE_VERSION) \
+	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
+	  -e REGISTRY_USERNAME=$(REGISTRY_USERNAME) \
+	  -e REGISTRY_PASSWORD=$(REGISTRY_PASSWORD) \
+	  -e REGISTRY_SERVER=$(REGISTRY_SERVER) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest
+
+.PHONY: repo-bundle-generate
+repo-bundle-generate:
+	@docker run \
+	  -e OPERATIONS=repo_bundle_generate \
+	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e REPO_BUNDLE_VERSION=$(REPO_BUNDLE_VERSION) \
+	  -e REPO_BUNDLE_SUB_VERSION=$(REPO_BUNDLE_SUB_VERSION) \
+	  -e PACKAGE_VALUES_FILE=$(PACKAGE_VALUES_FILE) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest
+
+.PHONY: repo-bundle-push
+repo-bundle-push:
+	@docker run \
+	  -e OPERATIONS=repo_bundle_push \
+	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
+	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
+	  -e REPO_BUNDLE_VERSION=$(REPO_BUNDLE_VERSION) \
+	  -e REPO_BUNDLE_SUB_VERSION=$(REPO_BUNDLE_SUB_VERSION) \
+	  -e REGISTRY_USERNAME=$(REGISTRY_USERNAME) \
+	  -e REGISTRY_PASSWORD=$(REGISTRY_PASSWORD) \
+	  -e REGISTRY_SERVER=$(REGISTRY_SERVER) \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  -v $(PWD):/workspace \
+		quay.io/hyayiv/packaging:latest

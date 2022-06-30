@@ -30,7 +30,6 @@ RUN --mount=target=. \
     --mount=type=cache,target=/root/.cache/go-build \
     go test ./...
 
-
 # Build the manager binary
 FROM base as builder
 ARG LD_FLAGS

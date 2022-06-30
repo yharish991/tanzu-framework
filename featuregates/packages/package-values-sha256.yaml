@@ -1,0 +1,21 @@
+#@data/values
+---
+repositories:
+  management:
+    name: management
+    domain: tanzu.vmware.com
+    packageSpec:
+      syncPeriod: 5m
+      deploy:
+        kappWaitTimeout: 5m
+        kubeAPIQPS: "20"
+        kubeAPIBurst: "30"
+    packages:
+    - name: featuregates
+      displayName: featuregates
+      path: packages/featuregates
+      domain: tanzu.vmware.com
+      version: v1.0.1
+      sha256: 6bf026d8f8e3aaabb374719b1f9788661f7b1eda4401bda9a7123f52f65a6cd8
+    sha256: latest
+    registry: registry

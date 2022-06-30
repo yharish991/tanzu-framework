@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	file := flag.String("kbld-config", "../../../packages/kbld-config.yaml", "Path to kbld-config.yaml file")
+	file := flag.String("kbld-config", "packages/kbld-config.yaml", "Path to kbld-config.yaml file")
 	flag.Parse()
 
 	if len(flag.Args()) != 2 {
