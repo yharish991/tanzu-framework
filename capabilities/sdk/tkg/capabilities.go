@@ -6,6 +6,7 @@ package tkg
 import (
 	"context"
 	"fmt"
+	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/capabilities/discovery"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -13,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/run/v1alpha1"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/capabilities/discovery"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/sdk"
 	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/tkg/test/tkgctl/shared"
 )
 
@@ -39,7 +40,7 @@ func (dc *DiscoveryClient) IsTKGm(ctx context.Context) (bool, error) {
 
 // IsTKGS returns true if the cluster is a TKGS cluster. Checks for the existence of any TKC API version.
 func (dc *DiscoveryClient) IsTKGS(ctx context.Context) (bool, error) {
-	query := discovery.Group("tkc", runv1alpha1.GroupVersion.Group).
+	query := sdk.Group("tkc", runv1alpha1.GroupVersion.Group).
 		WithResource("tanzukubernetesclusters")
 	return dc.clusterQueryClient.PreparedQuery(query)()
 }
