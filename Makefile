@@ -700,7 +700,7 @@ COMPONENTS ?=  \
   addons \
   cliplugins \
   pkg/v2/tkr/webhook/infra-machine \
-  pkg/v1/sdk/capabilities \
+  capabilities \
   pkg/v2/tkr/webhook/tkr-conversion \
   pkg/v2/tkr/webhook/cluster/tkr-resolver \
   addons/pinniped/tanzu-auth-controller-manager \

@@ -1,7 +1,7 @@
 # Copyright 2021 VMware, Inc. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-include ../../../../common.mk
+include ../common.mk
 
 IMG_DEFAULT_NAME := capabilities-controller-manager
 IMG_DEFAULT_TAG := latest
@@ -67,7 +67,7 @@ endif
 
 .PHONY: docker-build
 docker-build:
-	cd ../../../../ && docker build -t $(IMG) -f pkg/v1/sdk/capabilities/Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" .
+	cd .. && docker build -t $(IMG) -f capabilities/Dockerfile --build-arg LD_FLAGS="$(LD_FLAGS)" . --load
 
 .PHONY: docker-publish
 docker-publish: ## Publish docker image

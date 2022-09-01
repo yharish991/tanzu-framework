@@ -5,17 +5,12 @@ package tkg
 
 import (
 	"context"
-	"fmt"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/capabilities/discovery"
-	"strings"
 
-	"gopkg.in/yaml.v3"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/run/v1alpha1"
-	"github.com/vmware-tanzu/tanzu-framework/capabilities/sdk"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/tkg/test/tkgctl/shared"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/discovery"
 )
 
 const (
@@ -40,7 +35,7 @@ func (dc *DiscoveryClient) IsTKGm(ctx context.Context) (bool, error) {
 
 // IsTKGS returns true if the cluster is a TKGS cluster. Checks for the existence of any TKC API version.
 func (dc *DiscoveryClient) IsTKGS(ctx context.Context) (bool, error) {
-	query := sdk.Group("tkc", runv1alpha1.GroupVersion.Group).
+	query := discovery.Group("tkc", runv1alpha1.GroupVersion.Group).
 		WithResource("tanzukubernetesclusters")
 	return dc.clusterQueryClient.PreparedQuery(query)()
 }
@@ -71,23 +66,23 @@ func clusterTypeFromMetadataConfigMap(ctx context.Context, c client.Client) (str
 		return "", err
 	}
 
-	data, ok := cm.Data["metadata.yaml"]
-	if !ok {
-		return "", fmt.Errorf("failed to get cluster type: metadata.yaml key not found in configmap %s", key.String())
-	}
+	//data, ok := cm.Data["metadata.yaml"]
+	//if !ok {
+	//	return "", fmt.Errorf("failed to get cluster type: metadata.yaml key not found in configmap %s", key.String())
+	//}
 
 	// ClusterMetadata is not defined in a common package, so re-use this.
-	metadata := &shared.ClusterMetadata{}
-	if err := yaml.Unmarshal([]byte(data), metadata); err != nil {
-		return "", fmt.Errorf("failed to get cluster type: %w", err)
-	}
-	switch strings.ToLower(metadata.Cluster.Type) {
-	case clusterTypeManagement:
-		return clusterTypeManagement, nil
-	case clusterTypeWorkload:
-		return clusterTypeWorkload, nil
-	}
-	return "", fmt.Errorf("unknown cluster type: %v", metadata.Cluster.Type)
+	//metadata := &shared.ClusterMetadata{}
+	//if err := yaml.Unmarshal([]byte(data), metadata); err != nil {
+	//	return "", fmt.Errorf("failed to get cluster type: %w", err)
+	//}
+	//switch strings.ToLower(metadata.Cluster.Type) {
+	//case clusterTypeManagement:
+	//	return clusterTypeManagement, nil
+	//case clusterTypeWorkload:
+	//	return clusterTypeWorkload, nil
+	//}
+	return "", nil
 }
 
 // HasNSX indicates if a cluster has NSX capabilities.

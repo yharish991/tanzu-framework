@@ -1,7 +1,7 @@
 // Copyright 2021 VMware, Inc. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package controllers
+package capabilities
 
 import (
 	"context"
@@ -14,11 +14,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	runv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/run/v1alpha1"
-	"github.com/vmware-tanzu/tanzu-framework/pkg/v1/sdk/capabilities/discovery"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/config"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/discovery"
 )
 
 const (
-	contextTimeout                       = 60 * time.Second
+	ContextTimeout                       = 60 * time.Second
 	serviceAccountWithDefaultPermissions = "tanzu-capabilities-manager-default-sa"
 	capabilitiesControllerNamespace      = "tkg-system"
 )
@@ -36,7 +37,7 @@ type CapabilityReconciler struct {
 
 // Reconcile reconciles a Capability spec by executing specified queries.
 func (r *CapabilityReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	ctxCancel, cancel := context.WithTimeout(ctx, contextTimeout)
+	ctxCancel, cancel := context.WithTimeout(ctx, ContextTimeout)
 	defer cancel()
 
 	log := r.Log.WithValues("capability", req.NamespacedName)
@@ -56,7 +57,7 @@ func (r *CapabilityReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		serviceAccountName = serviceAccountWithDefaultPermissions
 		namespaceName = capabilitiesControllerNamespace
 	}
-	config, err := GetConfigForServiceAccount(ctx, r.Client, namespaceName, serviceAccountName, r.Host)
+	config, err := config.GetConfigForServiceAccount(ctx, r.Client, namespaceName, serviceAccountName, r.Host)
 	if err != nil {
 		return ctrl.Result{}, fmt.Errorf("unable to get config for ClusterQueryClient creation: %w", err)
 	}
