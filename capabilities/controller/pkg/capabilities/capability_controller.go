@@ -6,7 +6,6 @@ package capabilities
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -15,13 +14,8 @@ import (
 
 	runv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/run/v1alpha1"
 	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/config"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/constants"
 	"github.com/vmware-tanzu/tanzu-framework/capabilities/discovery"
-)
-
-const (
-	ContextTimeout                       = 60 * time.Second
-	serviceAccountWithDefaultPermissions = "tanzu-capabilities-manager-default-sa"
-	capabilitiesControllerNamespace      = "tkg-system"
 )
 
 // CapabilityReconciler reconciles a Capability object.
@@ -37,7 +31,7 @@ type CapabilityReconciler struct {
 
 // Reconcile reconciles a Capability spec by executing specified queries.
 func (r *CapabilityReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	ctxCancel, cancel := context.WithTimeout(ctx, ContextTimeout)
+	ctxCancel, cancel := context.WithTimeout(ctx, constants.ContextTimeout)
 	defer cancel()
 
 	log := r.Log.WithValues("capability", req.NamespacedName)
@@ -54,8 +48,8 @@ func (r *CapabilityReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		serviceAccountName = capability.Spec.ServiceAccountName
 		namespaceName = req.Namespace
 	} else {
-		serviceAccountName = serviceAccountWithDefaultPermissions
-		namespaceName = capabilitiesControllerNamespace
+		serviceAccountName = constants.ServiceAccountWithDefaultPermissions
+		namespaceName = constants.CapabilitiesControllerNamespace
 	}
 	config, err := config.GetConfigForServiceAccount(ctx, r.Client, namespaceName, serviceAccountName, r.Host)
 	if err != nil {

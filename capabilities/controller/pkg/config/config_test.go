@@ -15,13 +15,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/capabilities"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/constants"
 )
 
 func TestGetConfigForServiceAccount(t *testing.T) {
 	objs, secrets := getTestObjects()
 	cl := fake.NewClientBuilder().WithScheme(scheme.Scheme).WithRuntimeObjects(objs...).Build()
-	ctx, cancel := context.WithTimeout(context.Background(), capabilities.ContextTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.ContextTimeout)
 	defer cancel()
 	testCases := []struct {
 		description        string

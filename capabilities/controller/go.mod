@@ -5,9 +5,9 @@ go 1.17
 replace (
 	github.com/vmware-tanzu/tanzu-framework/apis/run => ../../apis/run
 	github.com/vmware-tanzu/tanzu-framework/capabilities/discovery => ../discovery
-	k8s.io/api => k8s.io/api v0.23.5
-	k8s.io/apimachinery => k8s.io/apimachinery v0.23.5
-	k8s.io/client-go => k8s.io/client-go v0.23.5
+	//k8s.io/api => k8s.io/api v0.23.5
+	//k8s.io/apimachinery => k8s.io/apimachinery v0.23.5
+	//k8s.io/client-go => k8s.io/client-go v0.23.5
 	sigs.k8s.io/cluster-api => sigs.k8s.io/cluster-api v1.1.5
 )
 
