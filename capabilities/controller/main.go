@@ -40,7 +40,7 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	setupLog.Info("Version", "version", "", "buildDate", "", "sha", "")
+	setupLog.Info("Version", "version", "buildinfo.Version", "buildDate", "buildinfo.Date", "sha", "buildinfo.SHA")
 
 	var err error
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{Scheme: scheme, MetricsBindAddress: "0"})
