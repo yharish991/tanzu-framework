@@ -17,7 +17,8 @@ import (
 	// +kubebuilder:scaffold:imports
 
 	runv1alpha1 "github.com/vmware-tanzu/tanzu-framework/apis/run/v1alpha1"
-	capctrl "github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/capabilities"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/capabilities/run"
+	"github.com/vmware-tanzu/tanzu-framework/capabilities/controller/pkg/capabilities/core"
 	"github.com/vmware-tanzu/tanzu-framework/cli/runtime/buildinfo"
 )
 
@@ -50,7 +51,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&capctrl.CapabilityReconciler{
+	if err = (&run.CapabilityReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Capability"),
+		Scheme: mgr.GetScheme(),
+		Host:   mgr.GetConfig().Host,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Capability")
+		os.Exit(1)
+	}
+
+	if err = (&core.CapabilityReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Capability"),
 		Scheme: mgr.GetScheme(),
