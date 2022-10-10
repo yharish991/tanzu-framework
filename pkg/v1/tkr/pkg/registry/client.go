@@ -77,7 +77,7 @@ func getFileContentFromImage(image regv1.Image, filename string) ([]byte, error)
 			return nil, err
 		}
 
-		defer layerStream.Close()
+		defer layerStream.Close() //nolint:gocritic
 
 		files := make(map[string][]byte)
 		err = getFileFromLayer(layerStream, files)
@@ -150,7 +150,7 @@ func getAllFilesContentFromImage(image regv1.Image) (map[string][]byte, error) {
 			return nil, err
 		}
 
-		defer layerStream.Close()
+		defer layerStream.Close() //nolint:gocritic
 
 		err = getFileFromLayer(layerStream, files)
 		if err != nil {

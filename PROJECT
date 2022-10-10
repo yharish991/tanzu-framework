@@ -53,4 +53,10 @@ resources:
 - group: core
   kind: Capability
   version: v1alpha2
+- group: core
+  kind: FeatureGate
+  version: v1alpha2
+- group: core
+  kind: Feature
+  version: v1alpha2
 version: "2"
