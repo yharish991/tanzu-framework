@@ -75,6 +75,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
+	github.com/PuerkitoBio/purell v1.1.1 // indirect
+	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/adrg/xdg v0.4.0 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220816024939-bc8df83d7b9d // indirect
@@ -213,6 +215,7 @@ require (
 	github.com/vmware-tanzu/carvel-ytt v0.40.0 // indirect
 	github.com/vmware-tanzu/tanzu-framework/apis/cli v0.0.0-00010101000000-000000000000 // indirect
 	github.com/vmware-tanzu/tanzu-framework/apis/config v0.0.0-20220824221239-af5a644ffef7 // indirect
+	github.com/vmware-tanzu/tanzu-framework/apis/core v0.0.0-20230110071428-504445fe9371 // indirect
 	github.com/vmware-tanzu/tanzu-framework/capabilities/client v0.0.0-00010101000000-000000000000 // indirect
 	github.com/vmware-tanzu/tanzu-framework/cli/core v0.0.0-20220914003300-5b2ed024556a // indirect
 	github.com/vmware-tanzu/tanzu-framework/packageclients v0.0.0-00010101000000-000000000000 // indirect
