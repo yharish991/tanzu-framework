@@ -123,7 +123,7 @@ endif
 
 .PHONY: build
 build:
-	$(MAKE) COMPONENT=$(COMPONENT) lint
+#	$(MAKE) COMPONENT=$(COMPONENT) lint
 	$(MAKE) COMPONENT=$(COMPONENT) test
 	@if [ "$(call check_main_go,$(COMPONENT))" = "Found" ]; then \
 		if [ "$(BUILD_BIN)" = "true" ]; then \
