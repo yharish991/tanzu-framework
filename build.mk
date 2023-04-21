@@ -215,6 +215,7 @@ package-bundle-generate:
 .PHONY: package-bundle-generate-all
 # Generate package bundle for all packages
 package-bundle-generate-all:
+	echo $(PWD)
 	@$(DOCKER) run \
 	  -e OPERATIONS=package_bundle_all_generate \
 	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
