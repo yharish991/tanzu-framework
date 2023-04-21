@@ -216,6 +216,8 @@ package-bundle-generate:
 # Generate package bundle for all packages
 package-bundle-generate-all:
 	echo $(PWD)
+	git init
+	ls -al
 	@$(DOCKER) run \
 	  -e OPERATIONS=package_bundle_all_generate \
 	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
