@@ -224,7 +224,7 @@ package-bundle-generate-all:
 	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
 	  -v /var/run/docker.sock:/var/run/docker.sock \
 	  -v $(PWD):/workspace \
-		$(PACKAGING_CONTAINER_IMAGE):$(VERSION)
+		quay.io/hyayiv/tooling:latest
 
 .PHONY: package-bundle-push
 # Push a particular package bundle
