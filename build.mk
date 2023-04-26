@@ -215,9 +215,6 @@ package-bundle-generate:
 .PHONY: package-bundle-generate-all
 # Generate package bundle for all packages
 package-bundle-generate-all:
-	echo $(PWD)
-	git init
-	ls -al
 	@$(DOCKER) run \
 	  -e OPERATIONS=package_bundle_all_generate \
 	  -e PACKAGE_REPOSITORY=$(PACKAGE_REPOSITORY) \
@@ -225,6 +222,7 @@ package-bundle-generate-all:
 	  -e OCI_REGISTRY=$(OCI_REGISTRY) \
 	  -e PACKAGE_VERSION=$(PACKAGE_VERSION) \
 	  -e PACKAGE_SUB_VERSION=$(PACKAGE_SUB_VERSION) \
+	  -e SUBMODULE_PATH=${SUBMODULE_PATH} \
 	  -v /var/run/docker.sock:/var/run/docker.sock \
 	  -v $(PWD):/workspace \
 		quay.io/hyayiv/tooling:v1
